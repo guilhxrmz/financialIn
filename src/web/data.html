@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard de Dados</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #F5F5F5;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #FFFFFF;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333333;
+        }
+
+        .chart-container {
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        .back-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 16px;
+            color: #FFFFFF;
+            background-color: #FF8C00;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+<a href="index.html" class="back-button">Voltar</a>
+<div class="container">
+    <h1>Dashboard de Dados</h1>
+    <div class="chart-container">
+        <canvas id="bank-chart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="category-chart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="transaction-chart"></canvas>
+    </div>
+</div>
+
+<script>
+    // Função auxiliar para obter os dados de uma URL
+    function fetchData(url) {
+        return fetch(url).then(response => response.json());
+    }
+
+    // Obtém os dados de Bank, Category e Transaction do servidor
+    Promise.all([
+        fetchData('http://localhost:3000/bank/'),
+        fetchData('http://localhost:3000/category/'),
+        fetchData('http://localhost:3000/transaction/')
+    ])
+        .then(([banks, categories, transactions]) => {
+            // Processa os dados e extrai as informações importantes
+            const bankNames = banks.map(bank => bank.name);
+            const bankAmounts = banks.map(bank => {
+                const bankTransactions = transactions.filter(transaction => transaction.bankId === bank._id);
+                return bankTransactions.reduce((total, transaction) => total + transaction.amount, 0);
+            });
+
+            const categoryNames = categories.map(category => category.name);
+            const categoryAmounts = categories.map(category => {
+                const categoryTransactions = transactions.filter(transaction => transaction.categoryId === category._id);
+                return categoryTransactions.reduce((total, transaction) => total + transaction.amount, 0);
+            });
+
+            const transactionTypes = [...new Set(transactions.map(transaction => transaction.type))];
+            const transactionAmounts = transactionTypes.map(type => {
+                const typeTransactions = transactions.filter(transaction => transaction.type === type);
+                return typeTransactions.reduce((total, transaction) => total + transaction.amount, 0);
+            });
+
+            // Cria os gráficos usando o Chart.js
+            createChart('bank-chart', 'Bank', bankNames, bankAmounts);
+            createChart('category-chart', 'Category', categoryNames, categoryAmounts);
+            createChart('transaction-chart', 'Transaction', transactionTypes, transactionAmounts);
+        })
+        .catch(error => {
+            console.error('Erro ao obter os dados:', error);
+        });
+
+    // Função auxiliar para criar um gráfico
+    function createChart(canvasId, label, labels, data) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: label,
+                    data: data,
+                    backgroundColor: '#FF8C00',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>

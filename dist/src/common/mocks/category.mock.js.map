@@ -1,0 +1,1 @@
+{"version":3,"file":"category.mock.js","sourceRoot":"","sources":["../../../../src/common/mocks/category.mock.ts"],"names":[],"mappings":";;;AAAa,QAAA,qBAAqB,GAAG;IACnC,SAAS,EAAE,OAAO;IAClB,aAAa,EAAE,UAAU;IACzB,eAAe,EAAE,UAAU;IAC3B,IAAI,EAAE,UAAU;IAChB,MAAM,EAAE,UAAU;CACnB,CAAC;AAEW,QAAA,YAAY,GAAG;IAC1B,EAAE,EAAE,sCAAsC;IAC1C,SAAS,EAAE,0BAA0B;IACrC,IAAI,EAAE,QAAQ;CACf,CAAC"}

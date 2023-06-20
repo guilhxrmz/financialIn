@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Formulário e Lista</title>
+    <style>
+        body {
+            background-color: #FFA500;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: 800px;
+            background-color: #FFFFFF;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #FF8C00;
+            font-family: "Times New Roman", Times, serif;
+        }
+
+        .form-container {
+            margin-bottom: 20px;
+        }
+
+        .form-container input {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #CCCCCC;
+        }
+
+        .form-container button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            text-align: center;
+            text-decoration: none;
+            background-color: #FF8C00;
+            color: #FFFFFF;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .form-container button:hover {
+            background-color: #FFA500;
+        }
+
+        .list-container {
+            padding: 20px;
+            background-color: #FFFAF0;
+            border-radius: 5px;
+        }
+
+        .list-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #FFFFFF;
+            border-radius: 5px;
+            border: 1px solid #CCCCCC;
+        }
+        .back-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 16px;
+            color: #FFFFFF;
+            background-color: #FF8C00;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+
+<div class="container">
+    <a href="index.html" class="back-button">Voltar</a>
+    <h1>Formulário e Lista</h1>
+
+    <div class="form-container">
+        <h2>Enviar Formulário</h2>
+        <form id="form">
+            <input type="text" name="name" placeholder="Nome" required>
+            <input type="text" name="account" placeholder="Conta" required>
+            <input type="number" name="cvv" placeholder="CVV" required>
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
+
+    <div class="list-container">
+        <h2>Lista de Formulários</h2>
+        <div id="list"></div>
+    </div>
+</div>
+
+<script>
+    const form = document.getElementById('form');
+    const list = document.getElementById('list');
+
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const name = form.elements.name.value;
+        const account = form.elements.account.value;
+        const cvv = form.elements.cvv.value;
+
+        const formData = { name, account, cvv };
+        addToServer(formData);
+        clearForm();
+    });
+
+    function addToServer(formData) {
+        fetch('http://localhost:3000/bank/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Dados enviados com sucesso:', data);
+                addToList(data);
+            })
+            .catch(error => {
+                console.error('Erro ao enviar os dados:', error);
+            });
+    }
+
+    function addToList(formData) {
+        const listItem = document.createElement('div');
+        listItem.classList.add('list-item');
+
+        const nameElement = document.createElement('p');
+        nameElement.textContent = `Nome: ${formData.name}`;
+        listItem.appendChild(nameElement);
+
+        const accountElement = document.createElement('p');
+        accountElement.textContent = `Conta: ${formData.account}`;
+        listItem.appendChild(accountElement);
+
+        const cvvElement = document.createElement('p');
+        cvvElement.textContent = `CVV: ${formData.cvv}`;
+        listItem.appendChild(cvvElement);
+
+        list.appendChild(listItem);
+    }
+
+    function clearForm() {
+        form.reset();
+    }
+
+    // Carregar lista de bancos do banco de dados
+    fetch('http://localhost:3000/bank/')
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(bank => {
+                addToList(bank);
+            });
+        })
+        .catch(error => {
+            console.error('Erro ao carregar a lista de bancos:', error);
+        });
+</script>
+</body>
+</html>

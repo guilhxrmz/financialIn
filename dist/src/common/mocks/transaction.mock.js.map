@@ -1,0 +1,1 @@
+{"version":3,"file":"transaction.mock.js","sourceRoot":"","sources":["../../../../src/common/mocks/transaction.mock.ts"],"names":[],"mappings":";;;AAAA,mDAA+C;AAElC,QAAA,eAAe,GAAG;IAC7B,EAAE,EAAE,sCAAsC;IAC1C,SAAS,EAAE,0BAA0B;IACrC,MAAM,EAAE,QAAQ;IAChB,IAAI,EAAE,YAAY;IAClB,UAAU,EAAE,CAAC,4BAAY,CAAC;CAC3B,CAAC"}

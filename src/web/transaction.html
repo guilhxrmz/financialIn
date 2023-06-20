@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Formulário e Lista</title>
+    <style>
+        body {
+            background-color: #FFA500;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: 800px;
+            background-color: #FFFFFF;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #FF8C00;
+            font-family: "Times New Roman", Times, serif;
+        }
+
+        .form-container {
+            margin-bottom: 20px;
+        }
+
+        .form-container input {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #CCCCCC;
+        }
+
+        .form-container button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            text-align: center;
+            text-decoration: none;
+            background-color: #FF8C00;
+            color: #FFFFFF;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .form-container button:hover {
+            background-color: #FFA500;
+        }
+
+        .list-container {
+            padding: 20px;
+            background-color: #FFFAF0;
+            border-radius: 5px;
+        }
+
+        .list-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #FFFFFF;
+            border-radius: 5px;
+            border: 1px solid #CCCCCC;
+        }
+        .back-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 16px;
+            color: #FFFFFF;
+            background-color: #FF8C00;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            margin: 0 5px;
+            padding: 5px 10px;
+        }
+
+        .pagination button.active {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<a href="index.html" class="back-button">Voltar</a>
+
+<div class="container">
+    <h1>Formulário e Lista - Transaction</h1>
+
+    <div id="form-container">
+        <h2>Enviar Formulário</h2>
+        <form id="form">
+            <input type="text" name="bankId" placeholder="Bank ID" required>
+            <input type="text" name="type" placeholder="Type" required>
+            <input type="number" name="amount" placeholder="Amount" required>
+            <input type="text" name="categoryId" placeholder="Category ID" required>
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
+
+    <div id="list-container">
+        <h2>Lista de Formulários</h2>
+        <div id="list"></div>
+        <div id="pagination" class="pagination"></div>
+    </div>
+</div>
+
+<script>
+    const form = document.getElementById('form');
+    const list = document.getElementById('list');
+    const pagination = document.getElementById('pagination');
+
+    let currentPage = 1;
+    const transactionsPerPage = 5;
+    let transactions = [];
+
+    function renderTransactions(transactions) {
+        list.innerHTML = '';
+
+        const start = (currentPage - 1) * transactionsPerPage;
+        const end = start + transactionsPerPage;
+        const currentTransactions = transactions.slice(start, end);
+
+        currentTransactions.forEach(transaction => {
+            addToList(transaction);
+        });
+    }
+
+    function renderPagination() {
+        pagination.innerHTML = '';
+
+        const totalPages = Math.ceil(transactions.length / transactionsPerPage);
+
+        for (let i = 1; i <= totalPages; i++) {
+            const button = document.createElement('button');
+            button.textContent = i;
+            button.addEventListener('click', function() {
+                currentPage = i;
+                renderTransactions(transactions);
+                renderPagination();
+            });
+
+            if (i === currentPage) {
+                button.classList.add('active');
+            }
+
+            pagination.appendChild(button);
+        }
+    }
+
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const bankId = form.elements.bankId.value;
+        const type = form.elements.type.value;
+        const amount = form.elements.amount.value;
+        const categoryId = form.elements.categoryId.value;
+
+        const formData = { bankId, type, amount, categoryId };
+        addToServer(formData);
+        clearForm();
+    });
+
+    function addToServer(formData) {
+        fetch('http://localhost:3000/transaction/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Dados enviados com sucesso:', data);
+                transactions.push(data);
+                renderTransactions(transactions);
+                renderPagination();
+            })
+            .catch(error => {
+                console.error('Erro ao enviar os dados:', error);
+            });
+    }
+
+    function addToList(formData) {
+        const listItem = document.createElement('div');
+        listItem.classList.add('list-item');
+
+        const typeElement = document.createElement('p');
+        typeElement.textContent = `Type: ${formData.type}`;
+        listItem.appendChild(typeElement);
+
+        const amountElement = document.createElement('p');
+        amountElement.textContent = `Amount: ${formData.amount}`;
+        listItem.appendChild(amountElement);
+
+        list.appendChild(listItem);
+    }
+
+    function clearForm() {
+        form.reset();
+    }
+
+    // Carregar lista de transações do banco de dados
+    fetch('http://localhost:3000/transaction/')
+        .then(response => response.json())
+        .then(data => {
+            transactions = data;
+            renderTransactions(transactions);
+            renderPagination();
+        })
+        .catch(error => {
+            console.error('Erro ao carregar a lista de transações:', error);
+        });
+</script>
+</body>
+</html>
